@@ -12,32 +12,36 @@ struct Database {
     path: String,
 }
 
-// Получить сохранённый журнал.
+// Load the saved journal.
 #[tauri::command]
-async fn load_journal(db: State<'_, Database>) -> Result<Value, String> {
+async fn load_journal(
+    db: State<'_, Database>,
+) -> Result<Value, String> {
     let payload = sqlx::query_scalar::<_, String>(
         "SELECT payload FROM journal_state WHERE id = 1",
     )
     .fetch_one(&db.pool)
     .await
-    .map_err(|error| format!("Не удалось загрузить журнал: {error}"))?;
+    .map_err(|error| format!("Failed to load journal: {error}"))?;
 
     serde_json::from_str(&payload)
-        .map_err(|error| format!("Некорректные данные журнала: {error}"))
+        .map_err(|error| format!("Invalid journal data: {error}"))
 }
 
-// Сохранить весь журнал одной атомарной SQL-командой.
+// Save the entire journal using one atomic SQL operation.
 #[tauri::command]
 async fn save_journal(
     db: State<'_, Database>,
     snapshot: Value,
 ) -> Result<(), String> {
     if !snapshot.is_object() {
-        return Err("Журнал должен быть JSON-объектом".into());
+        return Err("Journal data must be a JSON object".into());
     }
 
     let payload = serde_json::to_string(&snapshot)
-        .map_err(|error| format!("Не удалось подготовить данные: {error}"))?;
+        .map_err(|error| {
+            format!("Failed to serialize journal data: {error}")
+        })?;
 
     sqlx::query(
         r#"
@@ -51,12 +55,12 @@ async fn save_journal(
     .bind(payload)
     .execute(&db.pool)
     .await
-    .map_err(|error| format!("Не удалось сохранить журнал: {error}"))?;
+    .map_err(|error| format!("Failed to save journal: {error}"))?;
 
     Ok(())
 }
 
-// Показать пользователю точный путь к SQLite.
+// Return the exact SQLite database path.
 #[tauri::command]
 fn database_path(db: State<'_, Database>) -> String {
     db.path.clone()
@@ -68,6 +72,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let directory = app.path().app_data_dir()?;
+
             std::fs::create_dir_all(&directory)?;
 
             let path = directory.join("journal.sqlite");
@@ -84,7 +89,9 @@ pub fn run() {
                     .connect_with(options)
                     .await?;
 
-                sqlx::migrate!("./migrations").run(&pool).await?;
+                sqlx::migrate!("./migrations")
+                    .run(&pool)
+                    .await?;
 
                 Ok::<SqlitePool, Box<dyn std::error::Error>>(pool)
             })?;
@@ -102,5 +109,5 @@ pub fn run() {
             database_path,
         ])
         .run(tauri::generate_context!())
-        .expect("Не удалось запустить DndJournal");
+        .expect("Failed to start DndJournal");
 }

@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type {
@@ -17,11 +18,21 @@ type Snapshot = Record<string, unknown>;
 type JournalContextValue = {
   snapshot: Snapshot;
   setSnapshot: Dispatch<SetStateAction<Snapshot>>;
+  saving: boolean;
+  dirty: boolean;
+  saveError: string;
+  path: string;
+  retrySave: () => void;
 };
 
-const JournalContext = createContext<JournalContextValue | null>(null);
+const JournalContext =
+  createContext<JournalContextValue | null>(null);
 
-export function JournalProvider({ children }: { children: ReactNode }) {
+export function JournalProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const [snapshot, setSnapshot] = useState<Snapshot>({});
   const [savedJson, setSavedJson] = useState("{}");
 
@@ -31,6 +42,12 @@ export function JournalProvider({ children }: { children: ReactNode }) {
   const [saving, setSaving] = useState(false);
   const [path, setPath] = useState("");
 
+  const [retryVersion, setRetryVersion] = useState(0);
+
+  // Save operations are executed sequentially.
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+
+  // Load the journal when the application starts.
   useEffect(() => {
     let cancelled = false;
 
@@ -48,7 +65,9 @@ export function JournalProvider({ children }: { children: ReactNode }) {
           typeof data !== "object" ||
           Array.isArray(data)
         ) {
-          throw new Error("Неверный формат сохранённого журнала");
+          throw new Error(
+            "The saved journal has an invalid format."
+          );
         }
 
         setSnapshot(data);
@@ -56,7 +75,9 @@ export function JournalProvider({ children }: { children: ReactNode }) {
         setPath(databasePath);
         setLoaded(true);
       } catch (error) {
-        if (!cancelled) setLoadError(String(error));
+        if (!cancelled) {
+          setLoadError(String(error));
+        }
       }
     }
 
@@ -67,90 +88,120 @@ export function JournalProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Check whether the current journal differs from the saved version.
   const dirty = JSON.stringify(snapshot) !== savedJson;
 
-  async function save() {
-    if (saving) return;
+  // Manually retry a failed save.
+  const retrySave = useCallback(() => {
+    setRetryVersion((current) => current + 1);
+  }, []);
 
-    // Фиксируем именно ту версию, которую отправляем в Rust.
+  // Automatically save whenever journal data changes.
+  useEffect(() => {
+    if (!loaded || !dirty) return;
+
     const json = JSON.stringify(snapshot);
 
-    setSaving(true);
-    setSaveError("");
+    // A short delay prevents unnecessary database writes
+    // when several changes happen in quick succession.
+    const timeoutId = window.setTimeout(() => {
+      saveQueue.current = saveQueue.current
+        .catch(() => {
+          // A failed operation must not block future saves.
+        })
+        .then(async () => {
+          setSaving(true);
+          setSaveError("");
 
-    try {
-      await invoke("save_journal", {
-        snapshot: JSON.parse(json),
-      });
+          try {
+            await invoke("save_journal", {
+              snapshot: JSON.parse(json) as Snapshot,
+            });
 
-      setSavedJson(json);
-    } catch (error) {
-      setSaveError(String(error));
-    } finally {
-      setSaving(false);
-    }
-  }
+            setSavedJson(json);
+          } catch (error) {
+            setSaveError(String(error));
+          } finally {
+            setSaving(false);
+          }
+        });
+    }, 250);
 
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    snapshot,
+    savedJson,
+    loaded,
+    dirty,
+    retryVersion,
+  ]);
+
+  // Show an error if the journal cannot be loaded.
   if (loadError) {
     return (
       <main style={{ padding: 24 }}>
-        <p role="alert">Не удалось открыть журнал: {loadError}</p>
-        <button onClick={() => window.location.reload()}>
-          Попробовать снова
+        <p role="alert">
+          Could not open the journal: {loadError}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+        >
+          Try again
         </button>
       </main>
     );
   }
 
-  // Не открываем пустой интерфейс до окончания загрузки:
-  // пользователь не сможет случайно затереть старые данные.
+  // Wait until the existing journal has finished loading.
   if (!loaded) {
-    return <p style={{ padding: 24 }}>Загрузка журнала…</p>;
+    return (
+      <main style={{ padding: 24 }}>
+        Loading journal...
+      </main>
+    );
   }
 
   return (
-    <JournalContext.Provider value={{ snapshot, setSnapshot }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          flexWrap: "wrap",
-          padding: 12,
-          borderBottom: "1px solid #555",
-        }}
-      >
-        <button
-          type="button"
-          disabled={saving || !dirty}
-          onClick={() => void save()}
-        >
-          {saving ? "Сохранение…" : "Сохранить"}
-        </button>
-
-        <span role="status">
-          {dirty ? "Есть несохранённые изменения" : "Всё сохранено"}
-        </span>
-
-        <details>
-          <summary>Файл базы</summary>
-          <code>{path}</code>
-        </details>
-
-        {saveError && (
-          <span role="alert" style={{ color: "#ff7676" }}>
-            {saveError}
-          </span>
-        )}
-      </div>
-
+    <JournalContext.Provider
+      value={{
+        snapshot,
+        setSnapshot,
+        saving,
+        dirty,
+        saveError,
+        path,
+        retrySave,
+      }}
+    >
       {children}
     </JournalContext.Provider>
   );
 }
 
-// Используется почти так же, как useState.
-// Отличие: значение находится в общем сохраняемом журнале.
+// Access the current journal saving status.
+export function useJournalStatus() {
+  const context = useContext(JournalContext);
+
+  if (!context) {
+    throw new Error(
+      "useJournalStatus must be used inside JournalProvider."
+    );
+  }
+
+  return {
+    saving: context.saving,
+    dirty: context.dirty,
+    saveError: context.saveError,
+    path: context.path,
+    retrySave: context.retrySave,
+  };
+}
+
+// A shared-state hook that automatically saves changes.
 export function useJournalState<T>(
   key: string,
   initialValue: T | (() => T),
@@ -158,21 +209,31 @@ export function useJournalState<T>(
   const context = useContext(JournalContext);
 
   if (!context) {
-    throw new Error("useJournalState нужен JournalProvider");
+    throw new Error(
+      "useJournalState must be used inside JournalProvider."
+    );
   }
 
   const { snapshot, setSnapshot } = context;
 
   const [fallback] = useState<T>(initialValue);
 
-  const value = Object.prototype.hasOwnProperty.call(snapshot, key)
+  const value = Object.prototype.hasOwnProperty.call(
+    snapshot,
+    key
+  )
     ? (snapshot[key] as T)
     : fallback;
 
-  const setValue = useCallback<Dispatch<SetStateAction<T>>>(
+  const setValue = useCallback<
+    Dispatch<SetStateAction<T>>
+  >(
     (action) => {
       setSnapshot((current) => {
-        const previous = Object.prototype.hasOwnProperty.call(current, key)
+        const previous = Object.prototype.hasOwnProperty.call(
+          current,
+          key
+        )
           ? (current[key] as T)
           : fallback;
 
@@ -181,10 +242,13 @@ export function useJournalState<T>(
             ? (action as (previous: T) => T)(previous)
             : action;
 
-        return { ...current, [key]: next };
+        return {
+          ...current,
+          [key]: next,
+        };
       });
     },
-    [key, fallback, setSnapshot],
+    [key, fallback, setSnapshot]
   );
 
   return [value, setValue];
