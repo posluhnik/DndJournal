@@ -1,0 +1,242 @@
+.creation-toolbar {
+	flex-wrap: wrap;
+}
+.creation-toolbar .search-field {
+	min-width: 140px;
+}
+.creation-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 7px;
+	margin-left: auto;
+}
+.unknown-create {
+	min-height: 34px;
+	padding: 0 10px;
+	font-size: 11px;
+	white-space: nowrap;
+}
+.backpack-picker {
+	width: min(680px, calc(100vw - 40px));
+}
+.picker-filters {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 20px 24px;
+}
+.picker-filters select {
+	min-width: 125px;
+	max-width: 45%;
+	height: 34px;
+	padding: 0 9px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	background: #fff;
+	font: inherit;
+	font-size: 11px;
+}
+.picker-list {
+	min-height: 160px;
+	max-height: 42dvh;
+	overflow: auto;
+	padding: 0 24px 12px;
+}
+.picker-table thead th {
+	font-size: 10px;
+}
+.picker-table thead th:first-child {
+	width: 32px;
+	padding-left: 0;
+}
+.picker-table tbody th {
+	padding-left: 0;
+}
+.picker-table tbody td,
+.picker-table tbody th {
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+.picker-table td:first-child {
+	text-align: center;
+	padding-right: 12px;
+}
+.picker-table input[type="checkbox"],
+.picker-table input[type="radio"] {
+	width: 15px;
+	height: 15px;
+	accent-color: #555;
+	cursor: pointer;
+}
+.picker-table .item-link {
+	padding-right: 10px;
+	font-size: 12px;
+}
+.picker-category {
+	font-size: 11px;
+	color: var(--muted);
+	padding-right: 12px;
+}
+.picker-number {
+	width: 65px;
+	text-align: center;
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+.picker-number input {
+	width: 62px;
+	padding: 6px 4px;
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	text-align: center;
+	background: #fff;
+	font: inherit;
+	font-size: 12px;
+}
+.picker-number input:disabled {
+	opacity: 0.4;
+}
+.picker-selected {
+	box-shadow: inset 2px 0 #777;
+}
+.picker-empty {
+	padding: 20px 0;
+	font-size: 12px;
+	color: #777;
+	line-height: 1.7;
+}
+.picker-selection-count {
+	margin-right: auto;
+	font-size: 11px;
+	color: #777;
+}
+.form-error {
+	margin: 0;
+	color: #803e3e;
+	font-size: 12px;
+	line-height: 1.6;
+}
+.picker-error {
+	padding: 0 24px 16px;
+}
+.material-field {
+	display: grid;
+	gap: 9px;
+}
+.material-field-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	font-size: 12px;
+	color: #666;
+}
+.material-field-heading .text-button {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	min-height: 32px;
+	padding: 0 9px;
+	font-size: 11px;
+}
+.selection-hint {
+	margin: 0;
+	padding: 16px;
+	border: 1px dashed #ddd;
+	border-radius: 5px;
+	color: #888;
+	font-size: 11px;
+	line-height: 1.6;
+}
+.selected-materials {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+	border: 1px solid var(--line);
+	border-radius: 5px;
+	overflow: hidden;
+}
+.selected-materials li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 12px;
+	border-bottom: 1px solid var(--line);
+}
+.selected-materials li:last-child {
+	border-bottom: 0;
+}
+.selected-materials strong {
+	display: block;
+	font-size: 12px;
+	font-weight: 500;
+}
+.selected-materials li span {
+	display: block;
+	margin-top: 4px;
+	color: #888;
+	font-size: 10px;
+}
+.selected-materials .close-button {
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	font-size: 20px;
+}
+.known-item-field {
+	display: grid;
+	gap: 7px;
+	color: #666;
+	font-size: 12px;
+}
+.item-picker-field {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	min-height: 38px;
+	padding: 9px 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	text-align: left;
+	color: #444;
+	font-size: 13px;
+}
+.item-picker-field > span {
+	flex: 1;
+}
+.dialog-fields input[readonly] {
+	color: #777;
+	cursor: default;
+}
+
+@media (max-width: 500px) {
+	.picker-filters {
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 16px;
+	}
+	.picker-filters .search-field {
+		flex-basis: 100%;
+	}
+	.picker-filters select {
+		max-width: 100%;
+		width: 100%;
+	}
+	.picker-list {
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+	.picker-selection-count {
+		display: none;
+	}
+	.creation-actions {
+		gap: 5px;
+	}
+	.unknown-create {
+		padding: 0 7px;
+		font-size: 10px;
+	}
+}

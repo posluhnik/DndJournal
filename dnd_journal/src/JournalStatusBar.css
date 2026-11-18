@@ -1,167 +1,165 @@
 /* Main application layout */
 
 .app-shell {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 }
 
 .workspace {
-  height: calc(100dvh - 104px);
+	height: calc(100dvh - 104px);
 }
 
 /* Top status bar */
 
 .journal-statusbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 12px;
 
-  min-height: 42px;
-  padding: 8px 14px;
+	min-height: 42px;
+	padding: 8px 14px;
 
-  border: 1px solid var(--line);
-  border-radius: 11px;
+	border: 1px solid var(--line);
+	border-radius: 11px;
 
-  background: #fff;
-  color: #2a2a2a;
+	background: #fff;
+	color: #2a2a2a;
 }
 
 .journal-statusbar__brand {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.1px;
 }
 
 .journal-statusbar__right {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 12px;
 
-  min-width: 0;
-  margin-left: auto;
+	min-width: 0;
+	margin-left: auto;
 }
 
 .journal-statusbar__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
 
-  color: var(--muted);
-  font-size: 10px;
-  white-space: nowrap;
+	color: var(--muted);
+	font-size: 10px;
+	white-space: nowrap;
 }
 
 .journal-statusbar__indicator {
-  display: block;
-  width: 7px;
-  height: 7px;
-  flex-shrink: 0;
+	display: block;
+	width: 7px;
+	height: 7px;
+	flex-shrink: 0;
 
-  border-radius: 50%;
-  background: #aaa;
+	border-radius: 50%;
+	background: #aaa;
 }
 
-.journal-statusbar__status.is-pending
-.journal-statusbar__indicator {
-  background: #666;
+.journal-statusbar__status.is-pending .journal-statusbar__indicator {
+	background: #666;
 }
 
-.journal-statusbar__status.is-error
-.journal-statusbar__indicator {
-  background: #a05252;
+.journal-statusbar__status.is-error .journal-statusbar__indicator {
+	background: #a05252;
 }
 
 .journal-statusbar__error {
-  max-width: 300px;
+	max-width: 300px;
 
-  overflow-wrap: anywhere;
+	overflow-wrap: anywhere;
 
-  color: #8a3838;
-  font-size: 10px;
+	color: #8a3838;
+	font-size: 10px;
 }
 
 .journal-statusbar__retry {
-  min-height: 27px;
-  padding: 0 10px;
+	min-height: 27px;
+	padding: 0 10px;
 
-  border: 1px solid var(--line);
-  border-radius: 5px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
 
-  color: #444;
-  background: #fff;
+	color: #444;
+	background: #fff;
 
-  font-size: 10px;
+	font-size: 10px;
 }
 
 .journal-statusbar__retry:hover {
-  background: #f5f5f5;
+	background: #f5f5f5;
 }
 
 /* Database information */
 
 .journal-statusbar__database {
-  position: relative;
-  color: var(--muted);
-  font-size: 10px;
+	position: relative;
+	color: var(--muted);
+	font-size: 10px;
 }
 
 .journal-statusbar__database summary {
-  cursor: pointer;
-  white-space: nowrap;
+	cursor: pointer;
+	white-space: nowrap;
 }
 
 .journal-statusbar__database code {
-  display: block;
-  max-width: min(500px, 80vw);
-  margin-top: 8px;
-  padding: 9px;
+	display: block;
+	max-width: min(500px, 80vw);
+	margin-top: 8px;
+	padding: 9px;
 
-  overflow-wrap: anywhere;
+	overflow-wrap: anywhere;
 
-  border: 1px solid var(--line);
-  border-radius: 5px;
+	border: 1px solid var(--line);
+	border-radius: 5px;
 
-  background: #fff;
-  color: #555;
+	background: #fff;
+	color: #555;
 
-  font-size: 10px;
+	font-size: 10px;
 }
 
 /* Responsive layout */
 
 @media (max-width: 1100px) {
-  .workspace {
-    height: calc(100dvh - 94px);
-  }
+	.workspace {
+		height: calc(100dvh - 94px);
+	}
 }
 
 @media (max-width: 820px) {
-  .workspace {
-    height: auto;
-  }
+	.workspace {
+		height: auto;
+	}
 
-  .journal-statusbar {
-    align-items: flex-start;
-  }
+	.journal-statusbar {
+		align-items: flex-start;
+	}
 }
 
 @media (max-width: 480px) {
-  .journal-statusbar {
-    gap: 9px;
-  }
+	.journal-statusbar {
+		gap: 9px;
+	}
 
-  .journal-statusbar__right {
-    justify-content: flex-start;
-    width: 100%;
-    margin-left: 0;
-  }
+	.journal-statusbar__right {
+		justify-content: flex-start;
+		width: 100%;
+		margin-left: 0;
+	}
 
-  .journal-statusbar__error {
-    max-width: 100%;
-  }
+	.journal-statusbar__error {
+		max-width: 100%;
+	}
 }
