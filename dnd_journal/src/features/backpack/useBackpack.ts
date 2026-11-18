@@ -1,9 +1,14 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import type { JournalItem } from "../../types";
 import { saveRecord } from "../../lib/records";
+import { useJournalState } from "../../lib/journalStore";
+
 
 export function useBackpack() {
-  const [items, setItems] = useState<JournalItem[]>([]);
+  const [items, setItems] = useJournalState<JournalItem[]>(
+    "backpack",
+    [],
+  );
   const saveItem = useCallback((item: JournalItem) => {
     setItems((current) => saveRecord(current, item));
   }, []);

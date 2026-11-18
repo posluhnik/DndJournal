@@ -1,9 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useJournalState } from "../../lib/journalStore";
 import { appendStroke, clearDrawing, emptyDrawing, redoDrawing, undoDrawing } from "./history";
 import type { DrawingHistory, Stroke } from "./types";
 
 export function useDrawingHistory(page: string) {
-  const [pages, setPages] = useState<Record<string, DrawingHistory>>({});
+ const [pages, setPages] = useJournalState<
+    Record<string, DrawingHistory>
+  >("drawings", {});
   const update = useCallback((change: (history: DrawingHistory) => DrawingHistory) => {
     setPages((current) => ({ ...current, [page]: change(current[page] ?? emptyDrawing) }));
   }, [page]);

@@ -1,10 +1,16 @@
 import { useState } from "react";
+import { useJournalState } from "../../lib/journalStore";
 import { denominations, emptyWallet, parseWalletDraft, walletToDraft } from "./currency";
 import type { CoinCode, Wallet, WalletDraft } from "./currency";
 
 export function useWallet() {
-  const [balances, setBalances] = useState<Wallet>(emptyWallet);
-  const [drafts, setDrafts] = useState<WalletDraft>(() => walletToDraft(emptyWallet()));
+  const [balances, setBalances] = useJournalState<Wallet>(
+    "wallet",
+    emptyWallet,
+  );
+  const [drafts, setDrafts] = useState<WalletDraft>(
+    () => walletToDraft(balances),
+  );
   const [error, setError] = useState("");
   const [applied, setApplied] = useState(false);
   const dirty = denominations.some(({ code }) => drafts[code] !== String(balances[code]));
