@@ -7,4 +7,5 @@ npm run tauri dev
 Simple way for every other operation system besides wind:
 
 npm install
+
 npm run tauri dev
